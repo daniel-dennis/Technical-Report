@@ -1,0 +1,240 @@
+\part{Realsense Camera}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   Realsense Camera with Unity and Android                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Motivation and background}
+Surewash's current product range is successful in what it does, but they have key limitations. For the {\slshape ELITE} and {\slshape GO}, they are expensive, and for {\slshape Pocket}, its functionality is limited because it can only use a smartphone camera which has low resolution. To expand the Surewash's market reach, the strategy adopted is to develop a cheaper version of the {\slshape GO}. At present, the core hardware in this device is a Microsoft Surface Pro, which is expensive. The core strategy, therefore to reduce the cost of this device is to use another computer that is small, and cheap. One problem though is that cheap Windows devices are not that common, and when they are, they are not able to handle the workload required to run Surewash software. The core issue with hardware costs is that a Windows License and Intel processors are expensive. A much cheaper solution is to use an ARM-based device running a free operating system.
+
+{\slshape Pocket} was developed for Android, which is a free operating system, so it would make sense to develop this product using the Android platform, since it's well supported, and there is experience in-house with developing Apps for it. Unity is used as a cross-platform framework to develop the iOS and Android variants of Surewash {\slshape Pocket}, so if they were to develop using Android, Unity would be the preffered medium to develop the app with. The main issue with {\slshape Pocket}, mentioned ealier, is that it only uses a front facing mobile camera, which limits the scope for what can be seen from a Computer Vision perspective. {\slshape ELITE} and {\slshape GO} are differant, they use a special camera, developed by Intel that not only gives an RGB camera feed, but also a depth feed, which says how far a particular pixel is from the camera. This camera thus provides more information that can be used to get a better insight into whether someone is washing their hands correctly, or not.
+
+The crux of the problem that this project is meant to address is thus: find a way to get an Intel Realsense camera to work on Android, using Unity. At a first glance, this would not seem to be a particularly difficult challenge
+
+\section{Underlying concepts}
+This project makes use of a combination of C/C++, Java, and C sharp. There are some key concepts that distinguish these languages, which is core to understanding how the end solution works, as well as understanding the performance of the overall solution.
+    \subsection{Definitions}
+        \subsubsection{}{Compiler} is a programme that converts code written in one language, into that of another programming language.
+        \subsubsection{Virtual Machine (VM)} is a programme that emulates a computer system. In the context of this project, VM shall refer specifically to a Process Virtual Machine, which is a programme that executes programmes in a platform-independent manner.
+        \subsubsection{Ahead-Of-Time Compilation (AOT)} is the concept of compiling computer code from one language into native machine code before it is run. For example, if a programme is running on an X86 processor, the AOT compiler would compile the computer code into native X86 instructions and package it into some file containing the relevant binary instructions.
+        \subsubsection{Just-In-Time Compilation (JIT)} is the concept of compiling computer code from one language into native code during the execution of a programme.
+        % \paragraph{Execution Model} specifies the behavior of a programming language.
+        % \paragraph{Runtime Enviornment}
+        \subsubsection{Bytecode} Is an abstract instruction set that is designed to be efficiently interpreted into native instructions. As such, it means that it can be run on any platform using a JIT or AOT compiler.
+        \subsubsection{Stack Machine}
+        \subsubsection{Register Machine}
+        \subsubsection{Java Virtual Machine} is a virtual machine that executes Java bytecode using a JIT compiler. It behaves like a stack machine.
+        \subsubsection{Java Native Interface (JNI)} is a specification for interfacing between native code, and Java code.
+        \subsubsection{Name mangling}
+        % \subsubsection{Geometric transformation} According to \cite[pg.84]{usiskin2003mathematics}, "A geometric transformation is a function whose domain and range are sets of points. Most often the domain and range of a geometric transformation are both R2 or both R3. Often geometric transformations are required to be 1-1 functions, so that they have inverses". In the context of image processing, it can be used among other things to: translate, rotate, scale, and skew an image.
+
+    \subsection{Programming Languages}
+        \subsubsection{Java}
+        Java, alongside Kotlin (which isn't used in this project), is the main programming language for writing Android applications. It is general-purpose, class based, and object-oriented. It was one of the first languages to introduce the concept of "compile once, run anywhere", meaning that its compiled code can run on any platform, regardless of processor architecutre, since the compiled code, bytecode, is run in an abstract virtual machine. Its syntax is largely influenced by C++, but it doesn't have access to low-level memory facilities, instead, it is garbage collected.
+        \subsubsection{C}
+        C is a general-purpose, imperative programming language. It's instructions map very closely to typical machine instructions, which means that it can execute very fast, especially when compared to Java. C is needed in this project because JNI does not support C++ name mangling.
+        \subsubsection{C++}
+        C++ is built on top of C, and supports most of the features of C. It extends C by adding support for object oriented programming, generics, and a standard template library for common algorithms.
+        \subsubsection{C sharp}
+        C sharp is similar to Java in many ways. It is a part of Microsoft's Common Language Infrastructure specification which allows differant programming languages to execute on the same virtual machine, using the same underlying data-types which makes it easy to integrate libraries.
+
+    \subsection{Programming Enviornments}
+    The core enviornment of this project is the Android Operating System, and by extension, the Android Runtime. However, sitting on top of that is the Unity Game Engine.
+        \subsubsection{Android}
+        The Java programming language forms the core of Android applications. Android does not use a Java Virtual Machine, and as such, it does not implement the full standard library of Java. Android instead has two differant variants of runtimes for executing Java code. Firstly, Dalvik, a register-based virtual machine, which is now discontinued. Dalvik was designed with mobile development in mind. Originally, when Android was being developed in the mid-2000s, mobile devices were very limited in processing power and RAM. Java bytecode is translated to Dalvik bytecode, which is then run in a JIT compiler at runtime. Modern Android devices use the Android Runtime, which also takes in Dalvik Bytecode, but it then compiles this to native code when the application is being installed (i.e. it uses AOT compilation). This uses more storage space than Dalvik, but also means that it executes faster.
+
+        In the context of this project, it is an important consideration, since the Odroid board officially supports Android KitKat, which still uses the Dalvik VM. The Realsense library is CPU-intensive, and the additional overhead of the Surewash software means that any potential performance gain is crucial.
+        \subsubsection{Unity}
+        Unity is primarily a game engine, designed for writing modern 3D games. While the engine itself is written in C++, the end programmer writes C sharp scripts for game logic. The execution of C charp is similar to Java's in so far as they are both compiled to bytecode, which is then executed in a VM. Unity uses the Mono Framework to execute C sharp code, which is an open-source implementation of Microsoft's Common Language Runtime specification.
+    
+    \subsection{Hardware}
+        \subsubsection{Intel Realsense D435}
+        This is the camera that Surewash uses to monitor the user washing their hands. It has produces two differant types of feeds which can be used in conjuction with each other. Firstly, it produces a 1920x1080 RGB feed at 30 frames/second at a field-of-view of 69.4 degree x 42.5 degree x 77 degree. It also has a feed of depth pixels at a resolution of 1280x720 at 90 frames/second and a field-of-view of 87 degree x 58 degree x 95 degree. It transfers both of these feeds concurrantly through a USB‑C 3.1 Gen 1 connection. See {\cite inteld435} for more information.
+        \subsection{Hardkernel Odroid XU4}
+        This is a single board computer, similar in concept to a Raspberry Pi, but with a faster CPU \cite{odroid_xu4}. It contains a Samsung Exynos5 Octa SOC which contains an quad-core ARM Cortex-A15 2Ghz CPU and a quad-core ARM Cortex-A7 1.3GHz. It has 2GB of LPDDR3 RAM at 933MHz. Crucially, it contains a USB 3.0 hub which is required to interact with the Intel Realsense camera. It contains a relatively large heatsink which improves performance since it lessense the need for thermal throttling.
+    
+    \subsection{Software}
+        \subsubsection{Git}
+        This is a GPL-licensed programme that allows software developers to coordinate work by hosting code in a distributed version control system. It allows developers to work on source code independently and then merge the codebase. It also allows for tracking of differant files.
+        \subsubsection{Github}
+        The library for the Realsense camera is hosted in sourcecode format on a website called Github. The code can be accessed on the website either using a web browser and downloading the code, or by using Git to clone the repository.
+        \subsubsection{Intel Realsense Library}
+        Provides a list of APIs to interact with the Realsense camera in both C and C++. It also provides software wrappers containing starter code for various platforms including Android, Unity, Windows, Python et cetera. It has an Apache v2 license.
+        
+
+\section{The solution}
+    On a high level, the solution involves making an API calling sequence to the Realsense library to produce a texture, and Unity then renders this texture. There are two threads in operation, using a producer-consumer model. The camera thread is the producer thread, it is operating within the Realsense library, polling the camera for data and filling with drames. Unity acts as the consumer, taking data from the buffer and rendering it as a texture. With the current setup, the camera produces frames faster than Unity can consume them, and since the aim is to display a live video feed, the extra data produced by the camera that Unity cannot display in time needs to be discarded, or else the buffer becomes full and the whole system crashes.
+
+    \subsubsection{Realsense C API sequence}
+    The Unity codebase does not interact directly with the Realsense C API, instead, it calls a Java library as an intermediate. This is because certain OS calls are required to allow a USB device to correctly interface.
+
+    For every method mentioned below, an error veriable can be passed in, which if not NULL after the function call, can be passed into an error handler which returns an enumerated error type, which can be any of the following:
+
+    \begin{lstlisting}[style=CStyle]
+typedef enum rs2_exception_type
+{
+    RS2_EXCEPTION_TYPE_UNKNOWN,
+    RS2_EXCEPTION_TYPE_CAMERA_DISCONNECTED,      /**< Device was disconnected, this can be caused by outside intervention, by internal firmware error or due to insufficient power */
+    RS2_EXCEPTION_TYPE_BACKEND,                  /**< Error was returned from the underlying OS-specific layer */
+    RS2_EXCEPTION_TYPE_INVALID_VALUE,            /**< Invalid value was passed to the API */
+    RS2_EXCEPTION_TYPE_WRONG_API_CALL_SEQUENCE,  /**< Function precondition was violated */
+    RS2_EXCEPTION_TYPE_NOT_IMPLEMENTED,          /**< The method is not implemented at this point */
+    RS2_EXCEPTION_TYPE_DEVICE_IN_RECOVERY_MODE,  /**< Device is in recovery mode and might require firmware update */
+    RS2_EXCEPTION_TYPE_IO,                       /**< IO Device failure */
+    RS2_EXCEPTION_TYPE_COUNT                     /**< Number of enumeration values. Not a valid input: intended to be used in for-loops. */
+} rs2_exception_type;\end{lstlisting}
+
+    First, a 'context' needs to be created, among other things, this ensures that the correct API version is being used for the camera being used.
+    \begin{lstlisting}[style=CStyle]
+rs2_context* rs2_create_context(int api_version, rs2_error** error);\end{lstlisting}
+
+    A 'pipeline' can then be created using this 'context'. This creates a new thread than handles all relevant interfacing with the camera.
+
+    \begin{lstlisting}[style=CStyle]
+rs2_pipeline* rs2_create_pipeline(rs2_context* ctx, rs2_error ** error);\end{lstlisting}   
+
+    If a pipeline is created, it does not start actual streaming from the device. This is done with one of the following methods. The first method starts streaming without any configuration, i.e. it will use all stream types and use a default resolution, and framerate. These can be configured however and optimised for the particular setup, and this is desirable in the context of this project since a low-powered device, with a low screen resolution is being used, where a high framerate is not necessary. The configuration should be deleted after starting the pipeline.
+
+    \begin{lstlisting}[style=CStyle]
+// Start a pipeline
+rs2_pipeline_profile* rs2_pipeline_start(rs2_pipeline* pipe, rs2_error ** error);
+rs2_pipeline_profile* rs2_pipeline_start_with_config(rs2_pipeline* pipe, rs2_config* config, rs2_error ** error);
+
+// Creating a pipeline configuration
+rs2_config* rs2_create_config(rs2_error** error);
+void rs2_delete_config(rs2_config* config);
+void rs2_config_enable_stream(rs2_config* config,
+    rs2_stream stream,
+    int index,
+    int width,
+    int height,
+    rs2_format format,
+    int framerate,
+    rs2_error** error);\end{lstlisting}
+
+    The rs2\_pipeline\_wait\_for\_frames method can now be called. This method allocates a block of memory for a set of time-synchronised frames from the camera. What the set contains depends on the type of configuration, e.g. if only the depth and colour streams were selectred, the rs2\_frame* will contain two frames. The individual frames can then be extracted using the rs2\_extract\_frame method, providing an integer index. The type of frame must then be determined using the rs2\_get\_stream\_profile\_data method, the first parameter {\slshape mode} is found by calling rs2\_get\_frame\_stream\_profile, the second parameter is the rs2\_frame* value, the other parameters are output values for information about the frame.
+
+    \begin{lstlisting}[style=CStyle]
+// Get individual frames
+rs2_frame* rs2_pipeline_wait_for_frames(rs2_pipeline* pipe, unsigned int timeout_ms, rs2_error ** error);
+rs2_frame* rs2_extract_frame(rs2_frame* composite, int index, rs2_error** error);
+
+// Discover type of frame
+const rs2_stream_profile* rs2_get_frame_stream_profile(const rs2_frame* frame, rs2_error** error);
+
+void rs2_get_stream_profile_data(const rs2_stream_profile* mode, 
+    rs2_stream* stream, 
+    rs2_format* format, 
+    int* index, 
+    int* unique_id, 
+    int* framerate, 
+    rs2_error** error);\end{lstlisting}
+
+    For each frame from the set of frames, the following method is called to locate the raw data of the frame. The size of the data is determined by finding the product of rs2\_get\_frame\_width, rs2\_get\_frame\_height, and rs2\_get\_frame\_bits\_per\_pixel. The format of the data should be known when the rs2\_get\_stream\_profile\_data method was called, so, for example, if the format is RGBA8, each pixel will be four bytes wide (one byte per channel for red, blue, green, and alpha), and if the resolution is 1920x1080, the pointer returned by rs2\_get\_frame\_data will point to a block of memory 8,294,400 bytes large.
+
+    \begin{lstlisting}[style=CStyle]
+const void* rs2_get_frame_data(const rs2_frame* frame, rs2_error** error);
+
+int rs2_get_frame_width(const rs2_frame* frame, rs2_error** error);
+int rs2_get_frame_height(const rs2_frame* frame, rs2_error** error);
+int rs2_get_frame_bits_per_pixel(const rs2_frame* frame, rs2_error** error);\end{lstlisting}
+
+    Each frame must be released when it is no longer needed. When the camera is no longer needed for streaming, it must be explicitely stopped, and the pipeline deleted too.
+    \begin{lstlisting}[style=CStyle]
+void rs2_release_frame(rs2_frame* frame);
+void rs2_pipeline_stop(rs2_pipeline* pipe, rs2_error ** error);
+void rs2_delete_pipeline(rs2_pipeline* pipe);\end{lstlisting}
+
+    % The algorithm that Surewash uses requires both a colour, and depth stream. It needs these streams to be the same resolution, but the Realsense camera gives these streams at differant resolutions. A geometric transformation to scale one of the streams in terms of the other is therefore required to
+
+    \subsubsection{Java API sequence within Unity}
+    In the Android wrapper, a lot of the API calls mentioned above are abstracted away in the Java library, so the final code within the C sharp programme is relatively short.
+
+    \begin{lstlisting}[style=CSharpStyle]
+public class RsAndroidScript : MonoBehaviour
+{
+    // JVM objects
+    private AndroidJavaObject Pipe;
+    private AndroidJavaObject FrameSet;
+    private AndroidJavaObject ColourFrame;
+    private AndroidJavaObject DepthFrame;
+    // Unity types to display feed
+    private Texture2D tex;
+    public RawImage img;
+    private byte[] RsColourStream;
+    private byte[] RsDepthStream;
+    // Size of RGB video frame in bytes
+    private static int colourSize;
+    private static int depthSize;
+    // Start is called before the first frame update
+    void Start()
+    {
+        // Set up the RS feed
+        Pipe = new AndroidJavaObject("com.intel.realsense.librealsense.Pipeline");
+        Pipe.Call("unityStart");
+        // Find out the resolution of the feed
+    FrameSet = Pipe.Call<AndroidJavaObject>("waitAlignedFrames");
+    ColourFrame = FrameSet.Call<AndroidJavaObject>("unityFirst");
+    DepthFrame = FrameSet.Call<AndroidJavaObject>("unityDepthFirstZ16");
+    AndroidJavaObject VideoColourFrame = new
+        AndroidJavaObject("com.intel.realsense.librealsense.VideoFrame",
+        ColourFrame.Call<long>("unityGetHandle"));
+    AndroidJavaObject VideoDepthFrame = new
+        AndroidJavaObject("com.intel.realsense.librealsense.VideoFrame",
+        DepthFrame.Call<long>("unityGetHandle"));
+    // Assumes an RGB feed is being used for colour. If, for example, an RGBA feed is
+        used, the 3 would have to be changed to a 4.
+    colourSize = VideoColourFrame.Call<int>("getWidth") *
+        VideoColourFrame.Call<int>("getHeight") * 3;
+    depthSize = VideoDepthFrame.Call<int>("getWidth") *
+        VideoDepthFrame.Call<int>("getHeight") * 2;
+    RsColourStream = new byte[colourSize];
+    RsDepthStream = new byte[depthSize];
+    tex = new Texture2D(VideoColourFrame.Call<int>("getWidth"),
+        VideoColourFrame.Call<int>("getHeight"), TextureFormat.RGB24, false);
+    VideoColourFrame.Dispose();
+    VideoDepthFrame.Dispose();
+}
+// Update is called once per frame
+void Update()
+{
+    // Obtain the next frame
+    FrameSet = Pipe.Call<AndroidJavaObject>("waitAlignedFrames");
+    ColourFrame = FrameSet.Call<AndroidJavaObject>("unityFirst");
+    DepthFrame = FrameSet.Call<AndroidJavaObject>("unityDepthFirstZ16");
+    // API call to allocate memory in JVM for frame
+    ColourFrame.Call("allocateUnityArray", colourSize);
+    DepthFrame.Call("allocateUnityArray", depthSize);
+    // API call to RS backend to copy data to byte array in JVM
+    ColourFrame.Call("unityGetData");
+    DepthFrame.Call("unityGetData");
+    // Clear RS buffer
+    FrameSet.Call("close");
+    ColourFrame.Call("close");
+    DepthFrame.Call("close");
+    // Copy frame data from JVM to Unity VM
+    RsColourStream = ColourFrame.Get<byte[]>("mUnityByteArray");
+    RsDepthStream = DepthFrame.Get<byte[]>("mUnityByteArray");
+    // Free Java objects from the stack
+    FrameSet.Dispose();
+    ColourFrame.Dispose();
+    DepthFrame.Dispose();
+       // Load frame data to a texture and display on screen
+       tex.LoadRawTextureData(RsColourStream);
+       tex.Apply();
+       img.texture = tex;
+}
+    void OnDisable()
+    {
+       Pipe.Call("unityStop");
+       Pipe.Dispose();
+    }
+}\end{lstlisting}
+
+\section{Learning outcomes}
+    \subsection{Programme development}
+        \subsubsection{ADB debugger}
+        I learned how to use the Android debugger within Android Studio. I learned what breakpoints are, and how to use logs to assist with debugging.
+    \subsection{Using third party libraries}
+        \subsubsection{Build tools}
+        I learned about build tools such as Cmake, and Gradle. I learnt that they are examples of programmes that can be used to automate the build process of a programme and library. I gained experience in using them, and the importance of using them in large projects.
+        \subsubsection{Understanding how to read and understand other people's code}
+        While I may already have a good understanding of how to programme in, say C, and C++, that doesn't necessarily mean that I have the skills to read other people's code and understand what's going on there. I learned how to trace through differant function calls, and using breakpoints in a debugger to understand how a piece of code works.
