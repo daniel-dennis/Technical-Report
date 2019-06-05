@@ -28,7 +28,7 @@ The current Surewash algorithm uses traditional computer vision methods which ar
     \begin{figure}[h]
         \centering
         \includegraphics[width=150px]{../img/1000px-Colored_neural_network.png}
-        \caption{Obtained from: https://commons.wikimedia.org/wiki/File:Colored\_neural\_network.svg (accessed: 26-05-2019)}
+        \caption{Obtained from: https://commons.wikimedia.org/wiki/File:Colored\_neural\_network.svg (accessed: 26-05-2019) \copyright \space Glosser.ca, available under a CC BY-SA 3.0 license \url{https://creativecommons.org/licenses/by-sa/3.0/deed.en}}
         \label{fig:fcneuralnet}
     \end{figure}
 
@@ -88,8 +88,29 @@ The current Surewash algorithm uses traditional computer vision methods which ar
             \subsubsection{Backgrounds}
             The background for the dataset given was a white sheet, so if the ANN was trained on just this, it is unlikely to work with any other type of background. My strategy to ensure that the ANN learns to ignore the background, is inputting images of hands among a diverse range of backgrounds. A convenient aspect of the data that I was given was that each inmage of a hand pose contained a corresponding binary image seperating foreground and background pixels, it is therefore a trivial task to replace the background of these images.
 
-            \[
-                IMG_(background) = BACKGROUND \land BINARY\\
-                IMG_(foreground) = HAND \land!BINARY\\
-                OUTPUT = IMG_(background) \lor IMG_(foreground)\\
-            \]
+            \[ Y_{foreground} = HAND \land ROI \]
+            \[ Y_{background} = BACKGROUND \land \lnot ROI \]
+            \[ OUTPUT = Y_{background} \lor Y_{foreground} \]
+
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=114pt]{../img/handspipeline/1.png}
+                \includegraphics[width=114pt]{../img/handspipeline/2.png}
+                \includegraphics[width=114pt]{../img/handspipeline/3.png}\\
+                \includegraphics[width=114pt]{../img/handspipeline/4.png}
+                \includegraphics[width=114pt]{../img/handspipeline/5.png}
+                \includegraphics[width=114pt]{../img/handspipeline/6.png}
+                \caption{Top left to bottom right: $HAND$, $ROI$, $BACKGROUND$, $Y_{foreground}$, $Y_{background}$, $OUTPUT$. Images \copyright \space Glanta Ltd.}
+            \end{figure}
+
+            \subsection{Transformation}
+            A transformation can be used as a data augmentation strategy, but some caution needs to be used. As an example, flipping figure \ref{fig:flipped_example} will also change it's class, since there is a corresponding pose for the left and right hands. 
+
+            \begin{figure}[h]
+                \centering
+                \includegraphics[height=100pt]{../img/flipped_example.png}
+                \caption{\copyright \space Glanta Ltd.}
+                \label{fig:flipped_example}
+            \end{figure}
+
+            

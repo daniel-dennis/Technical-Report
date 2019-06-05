@@ -418,3 +418,5 @@ Temporary Items
 # glossaries
 
 # End of https://www.gitignore.io/api/tex,latex,macos   
+
+.vscode
