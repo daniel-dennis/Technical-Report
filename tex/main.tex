@@ -7,6 +7,8 @@
 \usepackage{listings}
 \usepackage{color}
 \usepackage{pgfplots}
+\usepackage{mathtools}
+\usepackage{amsfonts}
 \usepackage[font=small,labelfont=bf]{caption}
 \pgfplotsset{compat=1.11}
 
@@ -41,6 +43,27 @@
     showtabs=false,                  
     tabsize=2,
     language=C
+}
+
+\lstdefinestyle{JSStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\ttfamily,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    % language=C
 }
 
 \lstdefinestyle{CSharpStyle}{
