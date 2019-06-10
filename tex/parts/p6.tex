@@ -3,17 +3,21 @@
 % Dataset Labelling                                                     %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Motivation and background}
-This project is intimately linked with the neural networks project, but since a lot of time has been dedicated towards it, it merits a section for itself. This project is aimed at tackling the issue of lack of data, by providing a mechanism to get more data easily. The current bottleneck in aquiring more data is labelling the data, it's conceivably easy to set up a system to video hand washing, but to label it requires a bespoke system.
+This project is intimately linked with the neural networks project, but since a lot of time has been dedicated towards it, it merits a section for itself. This project is aimed at tackling the issue of lack of data, by providing a mechanism to get more data easily. The current bottleneck in aquiring more data is labelling the data, it's conceivably easy to set up a system to video hand washing, but to label it requires a bespoke system. This project is part of a broader initiative at Surewash to reevaluate the core computer vision system, and this project is part of the new testing framework. Surewash is collaborating with a group of researchers in Trinity, and the idea is to pool resources to develop reliable tools for marking up data for a computer system, as well as tools for evaluating the performance of the computer system.
+
+Since this is a collaboration, the specification of this project is designed to meet the requirements of both Surewash, as well as the researchers at Trinity. The broad definition therefore of this project was something that could read in the data from an Intel Realsense camera, mark individual frames or segments of video as being part of $n \in \mathbb{N}$ classes, as well as marking the region of interest, hereby ROI. There also had to be a way of comparing the markup between differant people's markup. There were no constraints on the implementation of the project, although it is desirable in my opinion to make a cross-platform solution.
+
+This project was assigned to both myself, as well as my fellow intern Gaurav. Since we're both somewhat familiar with Python and web development, we decided to use those tools to develop the solution. We agreed that I was more familiar with Python, and OS level scripting, so I mainly focused my efforts on server-side development, writing the programme for comparing marked up data, and any other miscellaneous scripts that handled file operations. Gaurav directed most of his attention towards writing the client-side code, such as the user interface.  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Overview                                                              %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Overview}
+\section{Overview Of Programme}
 The process of labelling the data is divided into three distinct stages, first preprocessing to prepare the data for labelling, then the actual labelling of the data, and then comparison of the labelled data between differant people.
     \subsection{Preprocessing}
     The data is captured on an Intel Realsense camera, which saves the data in ROS-bag format which is an uncompressed video \cite{intelrosbag}. This needs to be converted into an ordinary video format (such as MPEG-4 \cite{wiegand2003overview}). There is a tool within the library of the Realsense camera which converts to still images, so another tool called FFMPEG \cite{ffmpeg} is used to convert to MPEG-4. This entire process is done with in a bash script, so the end user only needs to provide the ROS-bag file as an argument to the script and it will output a video that can be used for labelling.
     \subsection{Labelling}
-    The data is labelled in a GUI web app. The programme is started from a terminal and then the labelling is done in a HTML5 application which allows the user to label the class for each frame of the video, as well as the Region Of Interest, hereby ROI. The output is saved to a text file, the markup file.
+    The data is labelled in a GUI web app. The programme is started from a terminal and then the labelling is done in a HTML5 application which allows the user to label the class for each frame of the video, as well as ROI. The output is saved to a text file, the markup file.
 
     \begin{figure}[h]
         \centering
@@ -111,7 +115,7 @@ function get_proportional_coordinates(cropper_instance, x1_func, y1_func, x2_fun
             f(\pmb{x})=
         \begin{cases}%
         1      & \text{otherwise}\\
-        0      & \text{if $x$ = 0}
+        0      & \text{if $x_i$ = 0}
         \end{cases} \\
         \pmb{c}=\pmb{a}-\pmb{b} \\
         \pmb{d}=f(\pmb{c})
@@ -122,7 +126,7 @@ function get_proportional_coordinates(cropper_instance, x1_func, y1_func, x2_fun
 
     The process of comparing the ROI region is as follows. The distance between the two coordinate pairs for each markup is compared using $\sqrt[]{{(x_2-x_1)}^2+{(y_2-y_1)}^2}$ and both pairs are added together. This will produce a vector of positive real numbers, a binary version of this vector is produced where the value exceeds some threshold, and thus a vector like that of $\pmb{d}$ above is produced.
 
-    A summary of the process is in Figure \ref{fig:roiprocessing}. Let $\pmb{A}$, $\pmb{B}$ be an $n \times 4$, matrix where $\pmb{A}_{ij}$, $\pmb{B}_{ij} \in \mathbb{R}^{n \times 4}$, $n \in \mathbb{N}$ is the number of frames, ${\pmb{A}}_{n1} \equiv x_1$, ${\pmb{A}}_{n2} \equiv y_1$, ${\pmb{A}}_{n3} \equiv x_2$, ${\pmb{A}}_{n4} \equiv y_2$, and the same for $\pmb{B}$. $T$ is the threshold.
+    A summary of the process is in Figure \ref{fig:roiprocessing}. Let $\pmb{A}$, $\pmb{B}$ be an $n \times 4$, matrix where $\pmb{A}_{ij}$, $\pmb{B}_{ij} \in \mathbb{R}^{n \times 4}$, $n \in \mathbb{N}$ is the number of frames, ${\pmb{A}}_{i1} \equiv x_1$, ${\pmb{A}}_{i2} \equiv y_1$, ${\pmb{A}}_{i3} \equiv x_2$, ${\pmb{A}}_{i4} \equiv y_2$, and the same for $\pmb{B}$. $T$ is the threshold.
 
     \begin{figure}[h]
         \centering
@@ -140,10 +144,12 @@ function get_proportional_coordinates(cropper_instance, x1_func, y1_func, x2_fun
             f(\pmb{x})=
         \begin{cases}
         1      & \text{otherwise}\\
-        % 0      & \text{if $x$ < T \in \mathbb{R}} 
+        0      & \text{if $x_i$ < T} \in \mathbb{R} 
         \end{cases} \\
         \pmb{d} = f(\pmb{c}) \\
         \end{gather*}
         \caption{}
         \label{fig:roiprocessing}
-    \end{figure}
+    \end{figure} 
+
+    The optimal values for the thresholds mentioned are subjective, and depend on how one might want to balance time constraints with accuracy of the markup.
