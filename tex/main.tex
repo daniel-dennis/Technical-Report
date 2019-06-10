@@ -10,7 +10,11 @@
 \usepackage{mathtools}
 \usepackage{amsfonts}
 \usepackage[font=small,labelfont=bf]{caption}
-\pgfplotsset{compat=1.11}
+\pgfplotsset{%
+    ,compat=1.12
+    ,every axis x label/.style={at={(current axis.right of origin)},anchor=north west}
+    ,every axis y label/.style={at={(current axis.above origin)},anchor=north east}
+    }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Code and markup styles                                              %

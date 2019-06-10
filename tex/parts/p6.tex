@@ -64,8 +64,7 @@ function return_current_frame() {
         curr_frame = frame_count - 1;
     }
     return curr_frame;
-}
-            \end{lstlisting} 
+}\end{lstlisting} 
             Since HTML5 video does not expose a way to get the frame number directly, it has to be obtained by multiplying the current time by the frame rate. Since there also is no way of determening the frame rate directly, a server-side HTTP GET method is used which uses ffprobe to determine the frame rate and push that to the client side using a Jquery AJAX method.
 
             \paragraph{ROI}
@@ -97,8 +96,54 @@ function get_proportional_coordinates(cropper_instance, x1_func, y1_func, x2_fun
         x2_proportional: x2_proportional,
         y2_proportional: y2_proportional,
     }
-}
-    \end{lstlisting} 
+}\end{lstlisting} 
 
     \subsection{Comparison}
-    Two differant markups of the same video are compared with a Python script. The task is divided into two parts, one camparing the class markup, and one comparing the class markup. The inputs are treated as signals, and processed to produce a sin
+    % ************************************
+    % Revise the wording of this paragraph
+    % ************************************
+    Two differant markups of the same video are compared with a Python script. The task is divided into two parts, one camparing the class markup, and one comparing the class markup.  To compare the class markup, each input is treated as a vector the process is first subtract one vector from the another, then from that output vector, produce another output vector where the output is one for non zero-values, and zero for zero values. The final result is an array of binary, where the index corresponds to the frame number. Since no markup is likely to be exactly the same, a threshold can be used whereby if the length of a sequence of ones is larger than that threshold, the programme can output that the two markups disagree at those points.
+    
+    A summary of the process can be seen in Figure \ref{fig:classprocessing}. Let $\pmb{a}$, $\pmb{b}$ be vectors ($n \times 1$ column matrix, where $n \in \mathbb{N}$ is the number of frames) denoting the marked up classes, where $\pmb{a}_i$, $\pmb{b}_i \in \mathbb{Z}$. The final binary array is $\pmb{d}$.
+    \begin{figure}[h]
+        \centering
+        \begin{gather*}
+            f(\pmb{x})=
+        \begin{cases}%
+        1      & \text{otherwise}\\
+        0      & \text{if $x$ = 0}
+        \end{cases} \\
+        \pmb{c}=\pmb{a}-\pmb{b} \\
+        \pmb{d}=f(\pmb{c})
+        \end{gather*}
+        \caption{}
+        \label{fig:classprocessing}
+    \end{figure}
+
+    The process of comparing the ROI region is as follows. The distance between the two coordinate pairs for each markup is compared using $\sqrt[]{{(x_2-x_1)}^2+{(y_2-y_1)}^2}$ and both pairs are added together. This will produce a vector of positive real numbers, a binary version of this vector is produced where the value exceeds some threshold, and thus a vector like that of $\pmb{d}$ above is produced.
+
+    A summary of the process is in Figure \ref{fig:roiprocessing}. Let $\pmb{A}$, $\pmb{B}$ be an $n \times 4$, matrix where $\pmb{A}_{ij}$, $\pmb{B}_{ij} \in \mathbb{R}^{n \times 4}$, $n \in \mathbb{N}$ is the number of frames, ${\pmb{A}}_{n1} \equiv x_1$, ${\pmb{A}}_{n2} \equiv y_1$, ${\pmb{A}}_{n3} \equiv x_2$, ${\pmb{A}}_{n4} \equiv y_2$, and the same for $\pmb{B}$. $T$ is the threshold.
+
+    \begin{figure}[h]
+        \centering
+        
+        \[
+        \pmb{c}=
+        \begin{bmatrix}
+            \sqrt[]{{(B_{11} - A_{11})}^2 + {(B_{12} - A_{12})}^2} + \sqrt[]{{(B_{13} - A_{13})}^2 + {(B_{14} - A_{14})}^2} \\
+            \sqrt[]{{(B_{21} - A_{21})}^2 + {(B_{22} - A_{22})}^2} + \sqrt[]{{(B_{23} - A_{23})}^2 + {(B_{24} - A_{24})}^2} \\
+            \vdots \\
+            \sqrt[]{{(B_{n1} - A_{n1})}^2 + {(B_{n2} - A_{n2})}^2} + \sqrt[]{{(B_{n3} - A_{n3})}^2 + {(B_{n4} - A_{n4})}^2} \\
+        \end{bmatrix}
+        \]
+        \begin{gather*}
+            f(\pmb{x})=
+        \begin{cases}
+        1      & \text{otherwise}\\
+        % 0      & \text{if $x$ < T \in \mathbb{R}} 
+        \end{cases} \\
+        \pmb{d} = f(\pmb{c}) \\
+        \end{gather*}
+        \caption{}
+        \label{fig:roiprocessing}
+    \end{figure}
