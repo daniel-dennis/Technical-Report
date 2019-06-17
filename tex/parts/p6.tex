@@ -17,8 +17,7 @@ The process of labelling the data is divided into three distinct stages, first p
     \subsection{Preprocessing}
     The data is captured on an Intel Realsense camera, which saves the data in ROS-bag format which is an uncompressed video \cite{intelrosbag}. This needs to be converted into an ordinary video format (such as MPEG-4 \cite{wiegand2003overview}). There is a tool within the library of the Realsense camera which converts to still images, so another tool called FFMPEG \cite{ffmpeg} is used to convert to MPEG-4. This entire process is done with in a bash script, so the end user only needs to provide the ROS-bag file as an argument to the script and it will output a video that can be used for labelling.
     \subsection{Labelling}
-    The data is labelled in a GUI web app. The programme is started from a terminal and then the labelling is done in a HTML5 application which allows the user to label the class for each frame of the video, as well as ROI. The output is saved to a text file, the markup file.
-
+    This programme is conceptually divided into two parts, the data is labelled in a GUI web app, and there is another backend programme that interfaces with the GUI web app. In the GUI web app, the user can play the video (or press a button to advance one frame at a time), and a series of buttons can be pressed while looking at the video to mark it as belonging to a particular class, see Figure \ref{fig:markupscreenshot}. One issue with this though is that there are many classes that could be present in a video, there are seven poses to be labeled, up to twenty sub poses with in those seven, and then those twnenty classes could be of high interest, or low interest, so up to forty in total. The problem thus is that no reasonable human operator would be able to watch a video and label it by pressing from a choice of forty buttons, this is where the backend programme is useful. For hand hygiene, the video could be labelled in levels, at the zeroth level, the user labels the video into seven classes, then the backend processes this markup and splits the video into seven non-overlapping sub-videos,  the user could label those sub-videos, and so on, until the desired level of granularity has been acheived.
     \begin{figure}[h]
         \centering
         \fbox{ \includegraphics[width=450px]{../img/markup_screenshot.png} }
@@ -33,8 +32,8 @@ The process of labelling the data is divided into three distinct stages, first p
 % Technical details                                                     %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Technical Details}
-    \subsection{Labelling}
-    Since the app is a web app, the code is divided into two parts, the server code, and the client code. The layout of the output file is as follows:
+    \subsection{Labelling - GUI}
+    Since the app is a web app, the code is divided into two parts, the server code, and the client code. The layout of the output is as follows:
 
     \[
     \begin{bmatrix}
@@ -60,7 +59,7 @@ The process of labelling the data is divided into three distinct stages, first p
         All of the logic for marking up the data happens in the client code, and since this is a web application, all of this code is written in JavaScript. The results are stored in an array of arrays. Each entry in the parent array corresponds to a frame, and each array in that corresponds to the coordinates, and class for that frame. Every time the video is played, paused, its frame put forward, or backward, it triggers a method to push the array back to the server using a Jquery AJAX method.
 
             \paragraph{Classes}
-            The class is marked simply by pressing a button for what the class is for the currently displayed frame. The currently displayed frame is obtained with the following function:
+            The class is marked simply by pressing a button for what the class is for the currently displayed frame, it finds the buttons by looking in an appropriate directory within the app folder. The currently displayed frame is obtained with the following function:
                 \begin{lstlisting}[style=JSStyle]
 function return_current_frame() {
     var curr_frame = Math.floor(theVideo.currentTime*frameRate);
@@ -101,6 +100,49 @@ function get_proportional_coordinates(cropper_instance, x1_func, y1_func, x2_fun
         y2_proportional: y2_proportional,
     }
 }\end{lstlisting} 
+
+    \subsection{Labelling - Backend}
+    The backend for the GUI is a seperate application and process to the GUI. Using the Python Subprocess module, it launches the GUI app as a seperate process and communicates the markup using a pipeline. Before launching the GUI app, the backend moves the relevant classes to be marked into the GUI app directory, as well as a video, then launches the app. The levels of classes are layed out in a heirarchal directory, with the name of the image being the name of the class. The core to the backend programme is a recursive function that moves through this heirarchal directory.
+
+    \paragraph{Labelling subsections of video}
+    A core reason for the existence of this backend is that it allows a user to label the video in increasing levels of detail, a core issue that needs to be solved though is how to segment the labelled video. In the context of hand hygiene, when the user has labelled the video into seven poses, and is now about to add the sub labels, it would not be intuitive to have the watch the entire video seven times again for this process, and so it needs to be cropped. The backend cannot make any assumptions however about how that markup might look like, take Figure \ref{fig:labelsample} as an example, there are some sections that have been marked as ambiguous (and thus do not need any further labelling), not all classes appear in this video, and some sections are not continuous.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=450px]{../img/sample_label.png}
+        \caption{A sample markup for a video}
+        \label{fig:labelsample}
+    \end{figure}
+
+    The video is segmented by first binning the frame numbers into a python dictionary, where the key is the class, and the values for each key are the frame numbers. These values are sorted, and then joined into segments of continuous video. For each sub level, the video is then cropped and concatenated according to these segments. A sample segment might look like the following:
+    \begin{lstlisting}[style=PythonStyle]
+# The ROI has been ommitted from results for convenience
+# Assume that there are only two classes to mark
+# Each index in results corresponds to a frame number
+results = [-1, -1, 1, 1, 1, 1, -1, 2, 2, 2, -1, 2, 2, 2, 2]
+binned_results = {
+    -1: [0, 1, 6, 10],
+    1:  [2, 3, 4, 5],
+    2:  [7, 8, 9, 11, 12, 13, 14]
+}
+segmented_results = {
+    -1: [[0, 1], [6, 6], [10, 10]],
+    1:  [[2, 5]],
+    2:  [[7, 9], [11, 14]]
+}\end{lstlisting}
+    The ambiguous sections (-1) would be discarded, and two sub-videos would be made, one containing frames two to five, and one containing the concatenated frames of seven to nine, and eleven to fourteen. This process can be repeated for further levels of granulation.
+
+    \paragraph{Saving progress mid-labelling}
+    A feature request of the backend is that the user could stop in the middle of labelling a video, return at a later time, and come back to the same state. In Python, when a programme is signalled to stop mid-execution, a {\slshape KeyboardInterrupt} exception is thrown, and this exception is caught to save the state. In the normal execution of the recursive function, when it finishes, it returns an empty list, but if it ends with a {\slshape KeyboardInterrupt} being thrown, a list with the frame intervals is included, then the parent recursive calls appends the segmented results dictionary described above, as well as the list of frame intevals that it is labelling (the top level call will have a frame interbal of [[0, maximum\_frame]]). Extending the above example, if the subclasses of class 2 were being labelled and the user stopped the programme, the return value of the top level recursive function would be as follows
+
+    \begin{lstlisting}[style=PythonStyle]
+return_value = [[[7, 9], [11, 14]], { -1: [[0, 1], [6, 6], [10, 10]], 1:  [[2, 5]], 2:  [[7, 9], [11, 14]]}, [[0, 14]]]
+# summary: return_value = [frame_interval, segmented_results, frame_interval]
+# This is where there was one level of recursion, if there was two levels of recursion, it would look like this
+# summary: return_value = [frame_interval, segmented_results, frame_interval, segmented_results, frame_interval]
+# In general, the amount of levels of recursion is length((return_value - 1) / 2)\end{lstlisting}
+
+    This return value, along with the results, and list of videos yet to be labelled are stored in file using Python's Pickle module (a built-in way of storing Python objects in File objects). When the user starts the programme again, if this Pickle file exists, it will reload the results, and call the recursive function again, and treat the return\_value variable as a stack. From the above example, it will know that the sub class of class 2 is nect to be labelled, because it can match [[7, 9], [11, 14]] with the key value 2 in the dictionary, and that class 1 has already been labelled because it calls itself in numerical order.
 
     \subsection{Comparison}
     % ************************************
@@ -153,3 +195,16 @@ function get_proportional_coordinates(cropper_instance, x1_func, y1_func, x2_fun
     \end{figure} 
 
     The optimal values for the thresholds mentioned are subjective, and depend on how one might want to balance time constraints with accuracy of the markup.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Learning Outcomes                                                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Learning outcomes}
+    \subsection{Group Projects}
+    I worked on this project with my fellow intern Guarav. This was the first proper project where I had to work as part of a group in a professional enviornment. I learned how to split the tasks of this project, based on the strengths and weaknesses of both of us, as well as the importance of reviewing each other's work.
+    \subsubsection{Programming}
+        \paragraph{Exception Handling}
+        This was the first time where I made use of exception handling. I learned how putting code in try..cat
+        \paragraph{Recursion}
+        I learned how recursion can be used to parse tree data structures ds
