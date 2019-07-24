@@ -1,6 +1,14 @@
 \documentclass[11pt]{article}
+\renewcommand{\familydefault}{\sfdefault}
+\renewcommand{\baselinestretch}{1.5} 
+\usepackage[margin=20mm, bindingoffset=15mm]{geometry}
+
 \usepackage[hidelinks]{hyperref}
-\usepackage{apacite}
+
+
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+% \bibliographystyle{harvard}
 \usepackage[utf8]{inputenc}
 \usepackage{newunicodechar}
 \usepackage{graphicx}
@@ -13,6 +21,7 @@
 \usepackage{mathtools}
 \usepackage{amsfonts}
 \usepackage[font=small,labelfont=bf]{caption}
+\usepackage{helvet}
 \pgfplotsset{%
     ,compat=1.12
     ,every axis x label/.style={at={(current axis.right of origin)},anchor=north west}
@@ -26,8 +35,8 @@
 \definecolor{darkgrey}{rgb}{0.117,0.117,0.117}
 \definecolor{lightgrey}{rgb}{0.828,0.828,0.828}
 
-\pagecolor{darkgrey}
-\color{lightgrey}
+% \pagecolor{darkgrey}
+% \color{lightgrey}
 
 \definecolor{mygray}{rgb}{0.4,0.4,0.4}
 \definecolor{mygreen}{rgb}{0,0.8,0.6}
@@ -166,57 +175,49 @@
 \tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=red!30]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
-\usepackage[margin=1.25in]{geometry}
+\newcommand{\inlinecode}[2]{\colorbox{backgroundColour}{\lstinline[style=#1]$#2$}}
+
+
 \usepackage{titlesec}
 % \titleformat*{\paragraph}{\normalsize\scshape}
 \usetikzlibrary{er,positioning}
-\bibliographystyle{apacite}
+% \bibliographystyle{apacite}
+
 
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Cover page and contents                                             %
+%   Cover page                                                          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-\setcounter{section}{0}
-\begin{figure}
-    \includegraphics[width=\linewidth]{../img/tcd_logo.jpg}
-\end{figure}
-\title{4E04 Internship\\ Technical Report}
-\author{Daniel Desmond Dennis\\ 15316947}
-\date{\today\\ {\bfseries DRAFT}}
-\maketitle
+\input{parts/title.tex}
 
-
-
-I have read and I understand the plagiarism provisions in the General Regulations of the University Calendar for the current year, found at: \url{http://www.tcd.ie/calendar}\\
-
-I have also completed the Online Tutorial on avoiding plagiarism ‘Ready, Steady, Write’, located at \url{http://tcd-ie.libguides.com/plagiarism/ready-steady-write}\\
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Contents                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \setcounter{tocdepth}{2}
 \tableofcontents
 \newpage
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Introduction                                                          %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{parts/p1.tex}
-\newpage
-\setcounter{section}{0}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Introduction                                                          %
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \input{parts/p1.tex}
+% \newpage
+% \setcounter{section}{0}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Data Analytics Suite                                                %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{parts/p2.tex}
-\newpage
-\setcounter{section}{0}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %   Data Analytics Suite                                                %
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \input{parts/p2.tex}
+% \newpage
+% \setcounter{section}{0}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Production Optinmisation                                            %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{parts/p3.tex}
-\newpage
-\setcounter{section}{0}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %   Production Optinmisation                                            %
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \input{parts/p3.tex}
+% \newpage
+% \setcounter{section}{0}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Realsense Camera with Unity and Android                             %
@@ -225,19 +226,21 @@ I have also completed the Online Tutorial on avoiding plagiarism ‘Ready, Stead
 \newpage
 \setcounter{section}{0}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Intel Neural Compute Stick 2                                          %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{parts/p5.tex}
-\newpage
-\setcounter{section}{0}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Intel Neural Compute Stick 2                                          %
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \input{parts/p5.tex}
+% \newpage
+% \setcounter{section}{0}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Dataset labelling                                                     %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{parts/p6.tex}
-\newpage
-\setcounter{section}{0}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Dataset labelling                                                     %
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \input{parts/p6.tex}
+% \newpage
+% \setcounter{section}{0}
 
-\bibliography{references}
+% \bibliography{references}
+\printbibliography
+
 \end{document}
