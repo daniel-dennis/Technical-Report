@@ -25,21 +25,19 @@ The process of labelling the data is divided into two distinct stages, first pro
 
     The core role of the wrapper application is to interface with the Flask application and seamlessly faciliatate the markup of the classes, as well as subclasses. After the top layer of class markup is complete, inspects the markup, calculates the sections of video that need to be marked with sub-classes, and then appropriately crops the original video before sending it to the flask app. In the context of Surewash, after the user has marked the seven top-level poses, the next task will be to mark the sub classes of pose two, so it will crop the video to only display the sections of video containing pose two (which can be an arbitrary amount of arbitrary sections of the video), and then send this video back to the flask app, as well as the appropriate class buttons. The loading, and reloading of the browser is facilitated using Selenium.
 
-
-
-    \begin{tikzpicture}[node distance=11cm]
-        \node (wrapper) [process] {Wrapper};
-        \node (flask) [process, right of=wrapper] {Flask};
-        \draw [arrow] (wrapper.170) -- node[anchor=south] {Classes (multiple .png files),\\
-         Video (one .mp4 file),\\ 
-         Current markup (std input)} (flask.10);
-        \draw [arrow] (flask.350) -- node[anchor=north] {Markup} (wrapper.190);
-    \end{tikzpicture}        
+    % \begin{tikzpicture}[node distance=11cm]
+    %     \node (wrapper) [process] {Wrapper};
+    %     \node (flask) [process, right of=wrapper] {Flask};
+    %     \draw [arrow] (wrapper.170) -- node[anchor=south] {Classes (multiple .png files),\\
+    %      Video (one .mp4 file),\\ 
+    %      Current markup (std input)} (flask.10);
+    %     \draw [arrow] (flask.350) -- node[anchor=north] {Markup} (wrapper.190);
+    % \end{tikzpicture}        
 
     \begin{figure}[h]
         \centering
         \fbox{ \includegraphics[width=450px]{../img/markup_screenshot.png} }
-        \caption{Screenshot of the labelling web app, all images are \copyright \space Glanta Ltd. (note that the browser was zoomed out to 67\% to fit the screenshot)}
+        \caption{Screenshot of the labelling web app, all images are \copyright \space Glanta DAC (note that the browser was zoomed out to 67\% to fit the screenshot)}
         \label{fig:markupscreenshot}
     \end{figure}
 
@@ -338,18 +336,10 @@ function get_proportional_coordinates(cropper_instance, x1_func, y1_func, x2_fun
     \subsection{Learning Outcomes}
         \subsubsection{Group Projects}
         I worked on this project with my fellow intern Guarav. This was the first proper project where I had to work as part of a group in a professional enviornment. I learned how to split the tasks of this project, based on the strengths and weaknesses of both of us, as well as the importance of reviewing each other's work.
-        \subsubsection{Programming}
+        \subsubsection{Programming design}
             \paragraph{Exception Handling}
             This was the first time where I made use of exception handling. I learned how putting code in try..catch statements can be used to handle exceptional scenarios within programme execution, and how using this idea can lead to cleaner, more comprehensible code.
             \paragraph{Recursion}
             I learned how recursion can be used to parse tree data structures, and how it can be used as an alternative to iterative methods for solving certain classes of problems.
             \paragraph{Inter-Process Communication}
             I learned how to use a pipeline, and how it can be used to divide a programme into distinct parts, and how that can lead to a more understandable solution.
-    \subsection{Reflection on goals}
-        \paragraph{Improve my skills in programme design}
-        A core design goal of this project, given its relative complexity was 
-        \paragraph{Enhance my time management skills}
-        \paragraph{Improve my presentation and public speaking skills}
-
-\section{Learning outcomes}
-    

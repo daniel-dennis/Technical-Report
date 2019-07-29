@@ -1,0 +1,84 @@
+\begin{appendices}
+    \section{Realsense Unity Solution}
+    \label{appendix:rsunitysol}
+    \begin{lstlisting}[style=CSharpStyle]
+public class RsAndroidScript : MonoBehaviour
+{
+    // JVM objects
+    private AndroidJavaObject Pipe;
+    private AndroidJavaObject FrameSet;
+    private AndroidJavaObject ColourFrame;
+    private AndroidJavaObject DepthFrame;
+    // Unity types to display feed
+    private Texture2D tex;
+    public RawImage img;
+    private byte[] RsColourStream;
+    private byte[] RsDepthStream;
+    // Size of RGB video frame in bytes
+    private static int colourSize;
+    private static int depthSize;
+    // Start is called before the first frame update
+    void Start()
+    {
+        // Set up the RS feed
+        Pipe = new AndroidJavaObject("com.intel.realsense.librealsense.Pipeline");
+        Pipe.Call("unityStart");
+        // Find out the resolution of the feed
+    FrameSet = Pipe.Call<AndroidJavaObject>("waitAlignedFrames");
+    ColourFrame = FrameSet.Call<AndroidJavaObject>("unityFirst");
+    DepthFrame = FrameSet.Call<AndroidJavaObject>("unityDepthFirstZ16");
+    AndroidJavaObject VideoColourFrame = new
+        AndroidJavaObject("com.intel.realsense.librealsense.VideoFrame",
+        ColourFrame.Call<long>("unityGetHandle"));
+    AndroidJavaObject VideoDepthFrame = new
+        AndroidJavaObject("com.intel.realsense.librealsense.VideoFrame",
+        DepthFrame.Call<long>("unityGetHandle"));
+    // Assumes an RGB feed is being used for colour. If, for example, an RGBA feed is
+        used, the 3 would have to be changed to a 4.
+    colourSize = VideoColourFrame.Call<int>("getWidth") *
+        VideoColourFrame.Call<int>("getHeight") * 3;
+    depthSize = VideoDepthFrame.Call<int>("getWidth") *
+        VideoDepthFrame.Call<int>("getHeight") * 2;
+    RsColourStream = new byte[colourSize];
+    RsDepthStream = new byte[depthSize];
+    tex = new Texture2D(VideoColourFrame.Call<int>("getWidth"),
+        VideoColourFrame.Call<int>("getHeight"), TextureFormat.RGB24, false);
+    VideoColourFrame.Dispose();
+    VideoDepthFrame.Dispose();
+}
+// Update is called once per frame
+void Update()
+{
+    // Obtain the next frame
+    FrameSet = Pipe.Call<AndroidJavaObject>("waitAlignedFrames");
+    ColourFrame = FrameSet.Call<AndroidJavaObject>("unityFirst");
+    DepthFrame = FrameSet.Call<AndroidJavaObject>("unityDepthFirstZ16");
+    // API call to allocate memory in JVM for frame
+    ColourFrame.Call("allocateUnityArray", colourSize);
+    DepthFrame.Call("allocateUnityArray", depthSize);
+    // API call to RS backend to copy data to byte array in JVM
+    ColourFrame.Call("unityGetData");
+    DepthFrame.Call("unityGetData");
+    // Clear RS buffer
+    FrameSet.Call("close");
+    ColourFrame.Call("close");
+    DepthFrame.Call("close");
+    // Copy frame data from JVM to Unity VM
+    RsColourStream = ColourFrame.Get<byte[]>("mUnityByteArray");
+    RsDepthStream = DepthFrame.Get<byte[]>("mUnityByteArray");
+    // Free Java objects from the stack
+    FrameSet.Dispose();
+    ColourFrame.Dispose();
+    DepthFrame.Dispose();
+       // Load frame data to a texture and display on screen
+       tex.LoadRawTextureData(RsColourStream);
+       tex.Apply();
+       img.texture = tex;
+}
+    void OnDisable()
+    {
+       Pipe.Call("unityStop");
+       Pipe.Dispose();
+    }
+}\end{lstlisting}    
+\end{appendices}   

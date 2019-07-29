@@ -46,20 +46,45 @@ The current Surewash algorithm uses traditional computer vision methods which ar
         Where $x_i$ represents the input of a previous neuron, or the entry to the graph, $w_i$ represents a weight that $x_i$ is multiplied by, $w_0$ represents the `bias' which is simply a scalar value, and $f$ is some function that produces a scalar output for that neuron.
         
         \subsubsection{Activation Functions}
+        The following are examples of activation functions that can be used. In this project, ReLU was used primarily.\\
 
         \begin{tikzpicture}
             \begin{axis}[grid=both,
-                xmax=10,ymax=10,
-                axis lines=middle,
-                restrict y to domain=-7:12,
-                enlargelimits]
-            \addplot[green]  {pow(2,x)} node[above]{$y=2^x$};
-            \addplot[blue,domain=1/2^6:10,samples=100]  {log2(x)} node[above left] {$y=\log_2(x)$};
+                ]
+                \addplot[blue] {tanh(x)};
             \end{axis}
-          \end{tikzpicture}
+            \node[above,font=\large\bfseries] at (current bounding box.north) {tanh: $tanh(z)$};
+        \end{tikzpicture}
+        \begin{tikzpicture}
+            \begin{axis}[grid=both,xmin=0
+                ]
+                \addplot+[mark=none,blue,domain=-3:0] {0};
+                \addplot+[mark=none,blue,domain=0:6] {x};
+            \end{axis}
+            \node[above,font=\large\bfseries] at (current bounding box.north) {ReLU: $max(0, z)$};
+        \end{tikzpicture}
+
+        \begin{tikzpicture}
+            \begin{axis}[grid=both,
+                ]
+                \addplot[blue]  {1/(1+exp(-x))} node[above]{};
+            \end{axis}
+            \node[above,font=\large\bfseries] at (current bounding box.north) {Sigmoid: $\frac{1}{1+e^{-z}}$};
+        \end{tikzpicture}
+          
 
           \subsubsection{Training ANNs}
-          {\slshape Insert stuff about the loss function and back propagation}
+          Once a particular architecture has been decided upon, the next task is to train a neural network. The goal of training a neural network is to find the optimal values for the weights $w_i$ in the neural network. Backpropagation, which in its modern form is described by \cite{rumelhart1988learning} is the predominant algorithm used to optimise the weights.
+
+          In the first stage (the forward pass), the network is evaluated by passing an input through, and the output of the network is passed to a loss function, which will produce a scalar loss value (for a particular input, an particular output is expected, the loss value is some indication of how far off the predicted value is over the actual value). In the second stage (the backward pass), the network is evaluated in reverse, going through each layer, the partial derivative (i.e. the gradient) of each neuron's output is evaluated using the chain rule. The weights for each neuron can then be adjusted using gradient descent, see Figure \ref{fig:gradientdescent} (where $\mu$ is the learning rate). The learning rate is typically set for all of the neurons, an example value might be 0.1, and this can be programatically adjusted during training, see \cite{learningratetypes}.
+
+          \begin{figure}[h]
+            \[
+                w_{n+1}=w_n-\mu \frac{d}{dw}f(w_0+\sum_{i=1}^nw_ix_i)
+            \]
+            \caption{Gradient Descent}
+            \label{fig:gradientdescent}
+            \end{figure}
 
 \section{Workflow}
     \subsection{Hardware}
@@ -72,10 +97,10 @@ The current Surewash algorithm uses traditional computer vision methods which ar
         Most programming was done with the Intel distribution of Python (my own computer has an Intel Coffee Lake CPU) since it is compiled to take advantage of special Intel CPU instructions for vector manipulation. Some miscellaneous work was also done with Bash script.
 
         \subsubsection{ANN Training}
-        For designing and training the neural networks, I used Keras \cite{chollet2015keras} because I had used it before. Keras is a high-level Python framework for designing ANNs, and acts for a frontend for other ANN frameworks, I choose Tensorflow \cite{tensorflow2015-whitepaper} as the backend because it is compatible with the NCS, and it is also relatively ubiquitous among the deep learning community.
+        For designing and training the neural networks, I used Keras (\cite{chollet2015keras}) because I had used it before. Keras is a high-level Python framework for designing ANNs, and acts for a frontend for other ANN frameworks, I choose Tensorflow (\cite{tensorflow2015-whitepaper}) as the backend because it is compatible with the NCS, and it is also relatively ubiquitous among the deep learning community.
 
         \subsubsection{Miscellaneous Processing}
-        Numpy is a Python library for fast matrix multiplication. Since Python is a scripted language, vector and matrix operations are slow in native code, so Numpy can process these operations faster.
+        Numpy (\cite{5725236}) is a Python library for fast matrix multiplication. Since Python is a scripted language, vector and matrix operations are slow in native code, so Numpy can process these operations faster.
 
         When uploading data to the AWS server, I used 7-Zip since the file size was usually large (4.32GB as one example was reduced to 699MB), and it took considerable time to upload large files like this.
 
@@ -129,12 +154,31 @@ The current Surewash algorithm uses traditional computer vision methods which ar
 
 \section{Training}
     \subsection{Architecture}
-    \subsection{Results}
+    It has been shown that reusing a pre-trained neural network can produce state-of-the-art results on a given problem given a small amount of training data (\cite{Razavian_2014_CVPR_Workshops}), that is therefore the strategy that was pursued in this project. A pre-trained VGG16 network was choosen, trained on ImageNet (\cite{imagenet_cvpr09}). Given that the dataset was small, only the fully-connected layers were trained.
+    \begin{lstlisting}[style=PythonStyle]
+vgg_conv = VGG16(weights='imagenet', include_top=False, input_shape=(img_rows, img_cols, 3))
+for layer in vgg_conv.layers:
+    layer.trainable = False
+x = vgg_conv.output
+x = Flatten()(x)
+x = Dense(4096, activation='relu')(x)
+x = Dense(4096, activation='relu')(x)
+x = Dense(1000, activation='relu')(x)
+predictions = Dense(20, activation='softmax', name='dd_output')(x)
+model = keras.models.Model(inputs=vgg_conv.input, outputs=predictions)
+opt = keras.optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+model.fit(x_train, y_train, batch_size=128, epochs=20, verbose=1, validation_data=(x_test, y_test))
+score = model.evaluate(x_test, y_test, verbose=0)\end{lstlisting}
+
     \subsection{Deployment}
+    My fellow intern, Gaurav was working on finding a way to connect the Realsense camera to the NCS to perform live inferance. The final stage of this project would have involved testing in a real-world scenario where the NCS is inferring live, based on the feed of the camera. Unfortunately, we had to move on to the next project, so this was never achieved.
 
 \section{Conclusion}
     \subsection{Learning Outcomes}
-    \subsection{Reflection on goals}
-        \paragraph{Improve my skills in programme design}  
-        \paragraph{Enhance my time management skills}
-        \paragraph{Improve my presentation and public speaking skills}
+        \subsubsection{Improve my skills in programme design}
+            \paragraph{Third party libraries} I learned how using a third larty library like Numpy can dramatically improve the efficiency of a Python programme.
+        \subsubsection{Enhance my time management skills}
+            \paragraph{Working with a remote server} I learned how using a compression tool like 7-Zip can save time when uploading a large file to a remote server over the internet.
+        \subsubsection{Other}
+            \paragraph{Artificial Neural Networks} I gained practical experience training a neural network, which has improved my intuition on how I should approach a problem that has the potential to be solved using an ANN.
