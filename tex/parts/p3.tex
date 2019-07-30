@@ -6,7 +6,7 @@
 \section{Motivation and background}
 Although a large portion of time spent in Surewash involves the continuous development and maintenance of their products, a critical function of the company is the actual manufacturing of the {\slshape ELITE} and {\slshape GO}, hereafter the {\slshape process}. A lot of the process has been outsourced. As an example, the computer for the {\slshape GO} is a {\slshape Microsoft Surface Pro}. This goes inside a hard plastic casing which is manufactured by a plastics manufacturer in China. The assembly of all the hardware is done by another company in Dublin.
 
-The final stage of the process involves installing all relevant software, hereafter called commissioning. In the commissioning stage.The computers come pre-installed with {\slshape Windows 10}, but there are configuration steps that are required to be completed before the product is shipped to the end user. As a summary of these steps are as follows:
+The final stage of the process involves installing all relevant software, hereafter called commissioning. In the commissioning stage. The computers come pre-installed with {\slshape Windows 10}, but there are configuration steps that are required to be completed before the product is shipped to the end user. As a summary of these steps are as follows:
 \begin{enumerate}
     \item Turn on the computer and go through the steps of the {\slshape Windows 10} setup wizard.
     \item Change some of the default {\slshape Windows 10} settings (e.g. turn off all the notification types, change some battery settings, change the wallpaper, etc)
@@ -15,11 +15,11 @@ The final stage of the process involves installing all relevant software, hereaf
     \item Complete each of the steps specified in the commissioning app, but ignore some of the steps.
 \end{enumerate}
 
-The steps in the commissioning app require a lot of user input to implement correctly. In short, the commnissioning process is long, laborious, and prone to human error. This leads problems both in quality control, and in wasted time for Surewash employees. While there is certainly scope to streamline the current process, it is my opinion that the entire process needs to be rethought.
+The steps in the commissioning app require a lot of user input to implement correctly. In short, the commissioning process is long, laborious, and prone to human error. This leads problems both in quality control, and in wasted time for Surewash employees. While there is certainly scope to streamline the current process, it is my opinion that the entire process needs to be rethought.
 
 \section{A new framework for commissioning}
     \subsection{Introduction}
-    The concept of preparing a `golden image' of a device's hard drive, and then rolling that image out to other computers is a well documented, and common practice amongst organisations (\cite{msftdeployment}). In short, one computer is set up to the desired end state, it is then booted into a special operating system, where the contents of one or more partitions in the hard drive/ SSD is copied, this copy is then transferred onto other devices, either manually, or by some automatic method, such as using a PXE server.
+    The concept of preparing a `golden image' of a device's hard drive, and then rolling that image out to other computers is a well-documented, and common practice amongst organisations (\cite{msftdeployment}). In short, one computer is set up to the desired end state, it is then booted into a special operating system, where the contents of one or more partitions in the hard drive/ SSD is copied, this copy is then transferred onto other devices, either manually, or by some automatic method, such as using a PXE server.
 
     There are various solutions that achieve this, both free and paid. Clonezilla is the solution that was chosen to achieve this \cite{clonezilla}. It was chosen because it is free (GPL License), and runs on Debian, which is also free.
     \subsection{The new process}
