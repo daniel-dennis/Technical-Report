@@ -23,4 +23,10 @@ The steps in the commissioning app require a lot of user input to implement corr
 
     There are various solutions that achieve this, both free and paid. Clonezilla is the solution that was chosen to achieve this \cite{clonezilla}. It was chosen because it is free (GPL License), and runs on Debian, which is also free.
     \subsection{The new process}
-    The painstaking steps of commissioning now need only happen on one computer, but with some caveats. There are a few steps that involve unique input, that is, the input of unique passwords and IDs. A fundamental limitation of Clonezilla, and indeed any other similar solution, is that it cannot perform these steps.
+    The old steps of commissioning now need only happen on one computer, but with some caveats. There are a few steps that involve unique input, that is, the input of unique passwords and IDs. A fundamental limitation of Clonezilla, and indeed any other similar solution, is that it cannot perform these steps. Once these non-unique steps have been done, Clonezilla is used to take an image of the Computer's disk, and this is flashed onto other computers. The last unique steps such as passwords are then done on all of the computers being comissioned individually.
+
+    \section{Conclusion}
+    \subsection{Learning Outcomes}
+        \subsubsection{Other}
+            \paragraph{Licensing}
+            I learned about the consequences of using GPL-licensed software, and what copyleft means, and why it might be problematic for a company like Surewash to integrate GPL-licensed software into its own, since it is all closed-source.

@@ -3,7 +3,7 @@
 % Intel Neural Compute Stick 2                                          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Motivation and background}
-The motivation of this project is a logical continuation of Part \ref{part:rscam} with the Intel Realsense Camera. In the previous project, a Hardkernel Odroid XU4 (hereafter Odroid) was used because it is comparatively cheaper than existing hardware used for Surewash products. The issue with Odroid is that it is still comparatively expensive in comparison to a Raspberry Pi (a casual search on Amazon suggests that it is at least 3-4 times more expensive). The issue with the Raspberry Pi is that its hardware is not capable of running the Surewash algorithm in a time critical setting, which is of course needed, since one of the key selling points of Surewash is that it can give live feedback to the user. A potential solution to this problem is using an Intel Neural Compute Stick, hereafter NCS. This is a low-power device that can interface with a Raspberry Pi via the USB protocol. The cornerstone of the NCS is the Myriad chip.
+The motivation of this project is a logical continuation of Chapter \ref{part:rscam} with the Intel Realsense Camera. In the previous project, a Hardkernel Odroid XU4 (hereafter Odroid) was used because it is comparatively cheaper than existing hardware used for Surewash products. The issue with Odroid is that it is still comparatively expensive in comparison to a Raspberry Pi (a casual search on Amazon suggests that it is at least 3-4 times more expensive). The issue with the Raspberry Pi is that its hardware is not capable of running the Surewash algorithm in a time critical setting, which is of course needed, since one of the key selling points of Surewash is that it can give live feedback to the user. A potential solution to this problem is using an Intel Neural Compute Stick, hereafter NCS. This is a low-power device that can interface with a Raspberry Pi via the USB protocol. The cornerstone of the NCS is the Myriad chip.
 
 The Myriad chip is described by Intel as a `Vision Processing Unit', hereafter VPU (not to be confused with a Video Processing Unit). One might already be familiar with the concept of a CPU, or Central Processing Unit, which is a microchip designed for general purpose computing, and a GPU, or Graphics Processing Unit, which is specifically optimised for {\slshape embarrassingly parallel} calculations, such as graphics processing, hence the name. The VPU is similar in idea to a GPU in that it is optimised for parallel computing, except that it is specifically designed for low-power situations (\cite{7024073}), and it is particularly suited for inferring convolutional and fully-connected artificial neural networks on mobile devices (inferring an artificial neural network means simply to evaluate it, distinct from training it).
 
@@ -119,7 +119,7 @@ The current Surewash algorithm uses traditional computer vision methods which ar
     As of writing this, it is still something of an open question as to how much data is required to effectively train a neural network, one of the key challenges with this project is acquiring enough data. When I started the project, I was given a labelled dataset containing 5114 images of hands, which is certainly too small, when ANNs such as VGG16 (\cite{vggnet}) were trained on many multiples the size of the dataset that I was given. The simplest strategy is to acquire more data, but without a defined procedure in place, this can be a time consuming, and costly process. Another strategy to get around limited data is employ data augmentation strategies, such as rotations, affine transformations, and background modification.
 
     \subsection{Data Acquisition}
-    acquiring more data is the best way to overcome a small dataset, but the acquisition process needs to be streamlined in order to achieve this task effectively. This was forked into a separate project which is described in the next part.
+    acquiring more data is the best way to overcome a small dataset, but the acquisition process needs to be streamlined in order to achieve this task effectively. This was forked into a separate project which is described in the next chapter.
 
     \subsection{Data Augmentation}
         \subsubsection{Backgrounds}
@@ -196,9 +196,9 @@ score = model.evaluate(x_test, y_test, verbose=0)\end{lstlisting}
 
 \section{Conclusion}
     \subsection{Learning Outcomes}
-        \subsubsection{Improve my skills in programme design}
+        \subsubsection{Programme design}
             \paragraph{Third party libraries} I learned how using a third party library like NumPy can dramatically improve the efficiency of a Python programme.
-        \subsubsection{Enhance my time management skills}
+        \subsubsection{Time management skills}
             \paragraph{Working with a remote server} I learned how using a compression tool like 7-Zip can save time when uploading a large file to a remote server over the internet.
         \subsubsection{Other}
             \paragraph{Artificial Neural Networks} I gained practical experience training a neural network, which has improved my intuition on how I should approach a problem that has the potential to be solved using an ANN.

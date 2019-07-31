@@ -13,11 +13,11 @@ A Surewash device aims to teach people how to wash their hands according to the 
 
 \footnotetext{Obtained from: https://apps.who.int/iris/bitstream/handle/10665/44102/9789241597906\_eng.pdf;sequence=1 (accessed: 30-07-2019)}
 
-At the time of writing, Surewash has existed for eight years, and they have seen steady growth in that time, with customers around the world. It is clear that the idea of using computer vision to train people how to wash their hands has been a success from a commercial context. Success, however, can be measured in different ways. If one were to assert the following, "Surewash is a successful company, therefore their products are effective", this would be committing the formal fallacy of Affirming the consequent. In simpler terms, just because people are buying Surewash products does not necessarily mean that said products do what they claim to, or that people use them in the first place. There are two questions that must be asked here. Firstly, is the general idea of using a camera and computer system to train people how to wash their hands effective. Secondly, is Surewash's implementation of this idea effective? At a first glance, it would appear that these two issues are mutually exclusive, i.e., if it's found that the general idea this method works, then Surewash's products must work. I would argue that this is not the case, to argue by using a hypothetical situation, people who use a Surewash machine for hand hygiene training may well learn how to wash their hands, but the machine itself may be difficult to use and require technical knowhow, so the general population may not gain the benefits of this machine because the barrier of entry with regards to using the machine is too high.
+At the time of writing, Surewash has existed for eight years, and they have seen steady growth in that time, with customers around the world. It is clear that the idea of using computer vision to train people how to wash their hands has been a success from a commercial context. Success, however, can be measured in different ways. If one were to assert the following, "Surewash is a successful company, therefore their products are effective", this would be committing the formal fallacy of Affirming the Consequent. In simpler terms, just because hospitals are purchasing Surewash products does not necessarily mean that said products do what they claim to, or that people use them in the first place.
 
-Small scale studies have been performed on the effectiveness of using a computer vision system to evaluate hand hygiene, such as \cite{ghosh2011impact} and \cite{ghosh2013pilot}, but the problem with these studies is that they used relatively small sample sizes. These studies also do not indicate if Surewash's implementation is successful. On the other hand, Surewash has a database covering many hospitals, over many years, covering different countries. Crucially, since Surewash is the only company that offers a product like this (since the process has a patent (\cite{handwashpatentglanta})), this is the first time that one can see how effective Surewash's products are, given the existence of several years of data. The aim therefore of this project is to evaluate how effective Surewash is as a service, distinct from evaluating how effective the concept of using a computer vision system is to train people how to wash their hands.
+Small scale studies have been performed on the effectiveness of using a computer vision system to evaluate hand hygiene, such as \cite{ghosh2011impact} and \cite{ghosh2013pilot}, but the issue with these studies is that they used relatively small sample sizes, and both studies were each conducted in one hospital. On the other hand, Surewash has a database covering many hospitals, over many years, covering different countries. Crucially, since Surewash is the only company that offers a product like this (since the process has a patent (\cite{handwashpatentglanta})), this is the first time that one can see how effective Surewash's products are, given the existence of several years of data. The aim therefore of this project is to evaluate how effective Surewash is as a service, distinct from evaluating how effective the concept of using a computer vision system is to train people how to wash their hands.
 
-The aim of this application has now been defined: to evaluate how effective Surewash is as a service. This question cannot be summarised in a holistic answer however. For example, if, say there have been ten thousands uses over a period of a year in a particular hospital, that gives no indication of the actual engagement of a product. On the other hand, if people have a `good engagement' of Surewash, it doesn't take into account the amount of people who used Surewash
+The aim of this application has now been defined: to evaluate how effective Surewash is as a service. This question cannot be summarised in a holistic answer however. For example, if, say there have been ten thousands uses over a period of a year in a particular hospital, that gives no indication of the actual engagement of a product. On the other hand, if people have a `good engagement' of Surewash, it doesn't take into account the amount of people who used Surewash.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Underlying concepts                                                   %
@@ -31,7 +31,7 @@ The aim of this application has now been defined: to evaluate how effective Sure
         \subsubsection{Python}
         Python is an interpreted, high-level, general-purpose language. It is ubiquitous in areas such as data science. It is known for being easy to learn, having an extensive standard library, as well as a strong community for support and third party libraries.
         \subsubsection{SQL}
-        SQL, short for Structured Query Language is a domain-specific programming language designed specifically for querying and manipulating databases. It comes in many dialects, this project uses the mySQL variant.
+        SQL, short for Structured Query Language is a domain-specific programming language designed specifically for querying and manipulating databases. It comes in many dialects, this project uses the MySQL variant.
         \subsubsection{HTML} 
         HTML, short for Hypertext Markup language is not a programming language, but a markup language. It is a core web technology used to describe the structure of webpage. It is based on SGML.
         \subsubsection{CSS}
@@ -43,6 +43,7 @@ The aim of this application has now been defined: to evaluate how effective Sure
         Visual Studio Code is an open source, free code editor developed by Microsoft. It is not an IDE, but it provides many features of one, such as code highlighting, code completion, and snippets.
         \subsubsection{Vim}
         Vim, short for Vi Improved, based on Vi, is a visual code editor (used in a command line interface). It can do everything that Visual Studio Code can do, but it has no support for a mouse, therefore all interaction is with a keyboard. The learning curve is substantial in comparison to a GUI-based text editor, but it is necessary to use Vim for this project since the server that this project runs on does not have a GUI.
+        \subsubsection{SSH} SSH is a network protocol that allows a network service to be encrypted over an unsecured network. In the context of this project, using SSH shall specifically refer to remote login of a server over a terminal interface.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sources                                                               %
@@ -51,7 +52,7 @@ The aim of this application has now been defined: to evaluate how effective Sure
 \section{Sources}
     \subsection{The devices} Surewash has three core products, the {\slshape ELITE}, {\slshape GO}, and {\slshape Pocket}. The {\slshape ELITE} and {\slshape GO} are equivalent devices from a data analytics perspective. They both run Windows, they both use the same camera, and run on the same computer vision algorithm. The differences mainly lie with the form-factor of the hardware. In contrast, the idea of {\slshape Pocket} is quite different. Whereas Surewash designs both hardware and software of the {\slshape ELITE} and {\slshape GO}, {\slshape Pocket} runs as a mobile app on iOS and Android. This is hugely consequential, since it is only feasible to test the software on a small amount of devices, and so data is much less predictable. It also uses the camera that comes with the phone, which means that the algorithm only has access to an RGB feed, in contrast, the {\slshape ELITE} and {\slshape GO} also have access to a depth feed (a matrix of pixels showing depth), which can give more accurate results. This also presents opportunities for analysing data between different devices, and seeing how Surewash is used on different devices. There has already been anecdotal evidence from customers that the performance of {\slshape Pocket} is variable between devices.
     \subsection{The database}
-    Surewash has a central server, which hosts a relational database (mySQL). Within this database, there are five key tables that are of interest for analysis: {\slshape User Records}, {\slshape User Profiles}, {\slshape Roles}, and {\slshape Customer}. For Surewash Pocket, it has a separate database, the only table of interest is {\slshape Hand Hygiene Session}. The following is a description of what each table contains:
+    Surewash has a central server, which hosts a relational database (MySQL). Within this database, there are five key tables that are of interest for analysis: {\slshape User Records}, {\slshape User Profiles}, {\slshape Roles}, and {\slshape Customer}. For Surewash Pocket, it has a separate database, the only table of interest is {\slshape Hand Hygiene Session}. The following is a description of what each table contains:
         \subsubsection{Table: User Records} Every time someone washes their hands with a Surewash device (hereafter a {\slshape session}), a new tuple is created in this table, which among other things, describes the following.
             \paragraph{MillisecondsP1\_time - MillisecondsP7\_time} How long was spent on a particular pose (one of the seven possible stages of washing hands), in milliseconds.
             \paragraph{P1\_passed - P7\_passed} A boolean value saying whether a particular pose was passed or not.
@@ -59,7 +60,7 @@ The aim of this application has now been defined: to evaluate how effective Sure
             \paragraph{P1\_failed - P7\_failed} A boolean value saying whether a particular pose was failed or not.
             \paragraph{DateTimeUTCSessionStart} What date and time (UTC) the session was started at.
             \paragraph{CustomerID} is a foreign key relating this table to {\slshape Customer}.
-            \paragraph{UserID} is a foreign key relating this table to User {\slshape User Profiles}.
+            \paragraph{UserID} is a foreign key relating this table to {\slshape User Profiles}.
             \paragraph{DifficultyLevel} The difficulty level chosen by a user.
         \subsubsection{Table: User Profiles} Each staff member in a hospital is associated with a tuple in this table. Each user profile can have many user records associated with it. The columns of interest are as follows:
             \paragraph{id} Can be used to select all {\slshape sessions} from {\slshape User Profiles} that this person has completed.
@@ -200,20 +201,22 @@ DROP ALL DATABASES;
 \section{Conclusion}
     \subsection{Learning Outcomes}
         \subsubsection{Programme design}
-            \subsubsection{Python}
+            \paragraph{Python}
             While I had used Python in college, it was mostly working with existing code, where only minor changes had to be made. This project was the first time where I had to write large amounts of code in Python, which meant that I had to gain a deeper understanding of how programming in it works.
-            \subsubsection{SQL}
+            \paragraph{SQL}
             This was the first time where I had to interact with an existing database, and come up with optimised SQL queries. While it's trivial to get data from a database, I had to ensure that my queries were optimised since this is a server accessed by customers, and if my queries took long periods of time to run, I could potentially affect the experience of Surewash customers. I also learned how to use database security, such as granting views and privileges.
+            \paragraph{Threading}
+            I learned how threaded programming can be used to improve the performance of a programme. I learned about the issues associated with threads, such as race conditions, and starvation. I learned that the {\slshape Threading} module for threaded programming in Python does not execute code concurrently in the {\slshape CPython} implementation of Python, and the {\slshape Multiprocessing} module must instead be used for this purpose.
         \subsubsection{Presentation}
             \paragraph{Oral presentation}
             I improved my skills in oral presentation by giving a non-technical presentation of the results given by the data analytics suite, as well as a demonstration of the user interface.
             \paragraph{Documentation}
             I improved my skills in documentation by writing a manual describing the usage of the programme, as well as another manual which describes documents how the code works.
-        \subsection{Other}
-            \subsubsection{Amazon Web Services}
+        \subsubsection{Other}
+            \paragraph{Amazon Web Services}
             I learned the very basics of AWS, such as how to setup a new server, and how to interact with this server using SSH and FTP. I also learned how to secure the server using a firewall.
-            \subsubsection{Vim}
+            \paragraph{Vim}
             I learned the basics of using Vim. Knowing how to use Vim is important since many computers do not have a graphical user interface, and while easier CLI text editors such as Nano exist, they are not as powerful or full-featured as Vim.
-            \subsection{Web security}
+            \paragraph{Web security}
             I learned about XSS attacks, CSRF attacks, and SQL injection attacks, what they are, how they work, and how to prevent them.
     % \subsection{Reflection}
